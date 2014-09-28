@@ -10,19 +10,30 @@ namespace PhpGo\Db\Doctrine\Dbal\Structure;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
 
-class Structure
+class Structure implements ConfigAbleInterface
 {
-    /** @var  array */
-    protected $data;
+    protected $config;
+    /**
+     * @var Table[]
+     */
+    protected $tables;
 
-    public function __construct(array $structure)
+    protected function __construct(array $config)
     {
-        $this->data = $structure;
+        $this->config = $config;
+        $this->handleData($config);
     }
 
     public static function createFromYaml($fileName)
     {
-        $configs       = [Yaml::parse($fileName)];
+        $config = Yaml::parse($fileName);
+
+        return static::createFromArray($config);
+    }
+
+    public static function createFromArray(array $config)
+    {
+        $configs       = [$config];
         $processor     = new Processor();
         $configuration = new Configuration();
 
@@ -31,14 +42,23 @@ class Structure
             $configs
         );
 
-        return new self($data);
+        return new static($data);
     }
 
-    /**
-     * @return array
-     */
-    public function getStructure()
+    protected function handleData(array $data)
     {
-        return $this->data;
+        foreach ($data['tables'] as $name => $tbl) {
+            $this->tables[$name] = Table::createFromStructure($name, $this);
+        }
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    public function getTables()
+    {
+        return $this->tables;
     }
 }
