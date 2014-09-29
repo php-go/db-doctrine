@@ -17,13 +17,18 @@ class Table implements ConfigAbleInterface
     protected $fields;
     /** @var  Structure */
     protected $structure;
+    /** @var  Table[] */
+    protected $belongToTables;
 
     /**
      * @param mixed $name
+     * @return $this
      */
     public function setName($name)
     {
         $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -39,7 +44,7 @@ class Table implements ConfigAbleInterface
         $this->fields[$field->getName()] = $field;
     }
 
-    protected function __construct()
+    public function __construct()
     {
     }
 
@@ -69,9 +74,21 @@ class Table implements ConfigAbleInterface
         return $schema->createTable($this->name);
     }
 
+    public function addBelongTo(Table $table)
+    {
+        $this->belongToTables[$table->getName()] = $table;
+
+        return $this;
+    }
+
     public function getConfig()
     {
         $config = $this->structure->getConfig();
         return $config['tables'][$this->name];
+    }
+
+    public function getName()
+    {
+        return $this->name;
     }
 }

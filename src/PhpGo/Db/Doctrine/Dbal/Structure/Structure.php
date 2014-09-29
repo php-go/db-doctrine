@@ -7,6 +7,7 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure;
 
+use PhpGo\Db\Doctrine\Dbal\Structure\Relation\Relation;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
 
@@ -17,6 +18,7 @@ class Structure implements ConfigAbleInterface
      * @var Table[]
      */
     protected $tables;
+    protected $manyToManyList;
 
     protected function __construct(array $config)
     {
@@ -48,13 +50,37 @@ class Structure implements ConfigAbleInterface
     protected function handleData(array $data)
     {
         foreach ($data['tables'] as $name => $tbl) {
-            $this->tables[$name] = Table::createFromStructure($name, $this);
+            $this->addTable(Table::createFromStructure($name, $this));
+        }
+
+        foreach ($this->tables as $table) {
+            if ($belongToNames = $table->getConfig()['belong_to']) {
+                foreach ($belongToNames as $name) {
+                    $table->addBelongTo($this->getTables()[$name]);
+                }
+            }
+        }
+
+        foreach ($data['many_many'] as $relation) {
+            $table = Relation::createManyToManyTable(
+                $this->tables[$relation[0]],
+                $this->tables[$relation[1]]
+            );
+
+            $this->addTable($table);
         }
     }
 
     public function getConfig()
     {
         return $this->config;
+    }
+
+    protected function addTable(Table $table)
+    {
+        $this->tables[$table->getName()] = $table;
+
+        return $this;
     }
 
     public function getTables()
