@@ -16,4 +16,9 @@ class BooleanField extends FieldAbstract
     {
         return FieldInterface::TYPE_BOOLEAN;
     }
+
+    public function getRealType()
+    {
+        return 'boolean';
+    }
 }

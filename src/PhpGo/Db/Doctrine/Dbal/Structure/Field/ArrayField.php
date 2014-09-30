@@ -16,4 +16,9 @@ class ArrayField extends FieldAbstract
     {
         return FieldInterface::TYPE_ARRAY;
     }
+
+    public function getRealType()
+    {
+        return 'array';
+    }
 }

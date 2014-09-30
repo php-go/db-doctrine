@@ -16,4 +16,9 @@ class TextField extends FieldAbstract
     {
         return FieldInterface::TYPE_TEXT;
     }
+
+    public function getRealType()
+    {
+        return 'text';
+    }
 }

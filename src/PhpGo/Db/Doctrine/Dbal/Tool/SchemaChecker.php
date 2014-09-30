@@ -9,7 +9,9 @@ namespace PhpGo\Db\Doctrine\Dbal\Tool;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Schema\Table as SchemaTable;
+use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldAbstract;
+use PhpGo\Db\Doctrine\Dbal\Structure\Field\RelationField;
 use PhpGo\Db\Doctrine\Dbal\Structure\Structure;
 
 class SchemaChecker
@@ -29,96 +31,59 @@ class SchemaChecker
      */
     public function getDiffSql($fileName)
     {
-        $structure    = Structure::createFromYaml($fileName);
-        $data         = $structure->getStructure();
-        $structureMap = Structure::getTypeMap();
-        $tables       = [];
+        $structure = Structure::createFromYaml($fileName);
+        $tables    = $structure->getTables();
+        /** @var SchemaTable[] $schemaTables */
+        $schemaTables = [];
 
         $newSchema = new Schema();
-
-        if (is_array($data['tables'])) {
-            foreach ($data['tables'] as $tblName => $tbl) {
-                /** @var \Doctrine\DBAL\Schema\Table $newTable */
-                $newTable = $tables[$tblName] = $newSchema->createTable($tblName);
-
-                foreach ($tbl['fields'] as $fieldName => $field) {
-                    $options            = [];
-                    $options['notnull'] = isset($field['required']) ? (bool) $field['required'] : false;
-
-                    if (isset($structureMap[$field['type']])) {
-                        $newTable->addColumn($fieldName, $structureMap[$field['type']], $options);
-                    } else {
-                        $newTable->addColumn($fieldName, $structureMap['string'], $options);
-                    }
-
-                    if (isset($field['unique']) && (bool) $field['unique']) {
-                        $newTable->addUniqueIndex([$fieldName]);
-                    }
-
-                    if (isset($field['index']) && (bool) $field['index']) {
-                        $newTable->addIndex([$fieldName]);
-                    }
-                }
-
-                $newTable->addColumn("id", "integer", array('autoincrement' => true));
-                $newTable->setPrimaryKey(array("id"));
-
-                /** timestamp_able 创建时间，更改时间 */
-                $timeAble = isset($tbl['timestamp_able']) ? $tbl['timestamp_able'] : false;
-                if ($timeAble) {
-                    (new Behavior\TimestampBehavior())->doIt($newTable);
-                }
-
-                /** tree_able 可进行树状存储 */
-                $treeAble = isset($tbl['tree_able']) ? $tbl['tree_able'] : false;
-                if ($treeAble) {
-                    (new Behavior\TreeBehavior())->doIt($newTable);
-                }
-            }
-        }
-
-        /** 多对一 */
-        if (is_array($data['tables'])) {
-            foreach ($data['tables'] as $tblName => $tbl) {
-                if (isset($tbl['belong_to'])) {
-                    foreach ($tbl['belong_to'] as $p) {
-                        $belongToTblName = is_array($p) ? key($p) : $p;
-                        $this->addForeign($tables[$tblName], $tables[$belongToTblName]);
-                    }
-                }
-            }
-        }
-
-        /** 多对多 */
-        if (isset($data['many_many']) && is_array($data['many_many'])) {
-            foreach ($data['many_many'] as $mm) {
-                sort($mm);
-
-                $tblName0 = is_array($mm[0]) ? key($mm[0]) : $mm[0];
-                $tblName1 = is_array($mm[1]) ? key($mm[1]) : $mm[1];
-                $tblName  = $tblName0 . '_' . $tblName1;
-
-                $tables[$tblName] = $newSchema->createTable($tblName);
-
-                $this->addForeign($tables[$tblName], $tables[$tblName0]);
-                $this->addForeign($tables[$tblName], $tables[$tblName1]);
-            }
-        }
-
         $oldSchema = $this->conn->getSchemaManager()->createSchema();
 
-        return $sql = $oldSchema->getMigrateToSql($newSchema, $this->conn->getDatabasePlatform());
-    }
+        foreach ($tables as $table) {
+            $schemaTable = $newSchema->createTable($table->getName());
+            $schemaTable->addColumn('id', 'integer', ['autoincrement' => true]);
+            $schemaTable->setPrimaryKey(['id']);
 
-    public function addForeign(Table $table, Table $foreignTable)
-    {
-        $columnName = $foreignTable->getName() . '_id';
-        $table->addColumn($columnName, "integer", ['notnull' => false]);
-        $table->addForeignKeyConstraint(
-            $foreignTable,
-            array($columnName),
-            array("id"),
-            array("onUpdate" => "CASCADE", "onDelete" => "SET NULL")
+            $schemaTables[$table->getName()] = $schemaTable;
+        }
+
+        //为每个表附加字段
+        foreach ($tables as $table) {
+            foreach ($table->getFields() as $fieldName => $field) {
+                $schemaTable = $schemaTables[$table->getName()];
+                $schemaTable->addColumn(
+                    $fieldName,
+                    $field->getRealType(),
+                    ['notnull' => $field->isRequired()]);
+
+                if ($field instanceof RelationField) {
+                    $schemaTable->addForeignKeyConstraint(
+                        $schemaTables[$field->getRelationTable()->getName()],
+                        array($field->getName()),
+                        ["id"],
+                        ["onUpdate" => "CASCADE", "onDelete" => "SET NULL"]
+                    );
+
+                    continue;
+                }
+
+                if ($field instanceof FieldAbstract) {
+                    if ($field->isUnique()) {
+                        $schemaTable->addUniqueIndex([$field->getName()]);
+                    }
+
+                    if ($field->isIndex()) {
+                        $schemaTable->addIndex([$field->getName()]);
+                    }
+
+                    continue;
+                }
+            }
+        }
+
+        return $sql = $oldSchema->getMigrateToSql(
+            $newSchema,
+            $this->conn->getDatabasePlatform()
         );
     }
 }

@@ -16,4 +16,9 @@ class StringField extends FieldAbstract
     {
         return FieldInterface::TYPE_STRING;
     }
+
+    public function getRealType()
+    {
+        return 'string';
+    }
 }

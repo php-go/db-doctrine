@@ -18,7 +18,6 @@ class Structure implements ConfigAbleInterface
      * @var Table[]
      */
     protected $tables;
-    protected $manyToManyList;
 
     protected function __construct(array $config)
     {

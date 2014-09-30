@@ -16,4 +16,9 @@ class TimeField extends FieldAbstract
     {
         return FieldInterface::TYPE_TIME;
     }
+
+    public function getRealType()
+    {
+        return 'time';
+    }
 }

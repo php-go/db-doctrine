@@ -9,6 +9,7 @@ namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
 use PhpGo\Db\Doctrine\Dbal\Structure\ConfigAbleInterface;
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
+use Doctrine\DBAL\Schema\Table as SchemaTable;
 
 abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
 {

@@ -16,4 +16,9 @@ class FloatField extends FieldAbstract
     {
         return FieldInterface::TYPE_FLOAT;
     }
+
+    public function getRealType()
+    {
+        return 'float';
+    }
 }

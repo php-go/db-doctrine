@@ -16,4 +16,9 @@ class DateField extends FieldAbstract
     {
         return FieldInterface::TYPE_DATE;
     }
+
+    public function getRealType()
+    {
+        return 'date';
+    }
 }

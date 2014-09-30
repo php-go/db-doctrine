@@ -16,4 +16,9 @@ class IntegerField extends FieldAbstract
     {
         return FieldInterface::TYPE_INTEGER;
     }
+
+    public function getRealType()
+    {
+        return 'integer';
+    }
 }

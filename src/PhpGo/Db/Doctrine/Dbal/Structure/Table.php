@@ -10,18 +10,19 @@ namespace PhpGo\Db\Doctrine\Dbal\Structure;
 use Doctrine\DBAL\Schema\Schema;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldAbstract;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldFactory;
+use PhpGo\Db\Doctrine\Dbal\Structure\Field\RelationField;
 
 class Table implements ConfigAbleInterface
 {
     protected $name;
+    /** @var  FieldAbstract[] */
     protected $fields;
     /** @var  Structure */
     protected $structure;
-    /** @var  Table[] */
-    protected $belongToTables;
+    protected $schemaTable = null;
 
     /**
-     * @param mixed $name
+     * @param  mixed $name
      * @return $this
      */
     public function setName($name)
@@ -69,14 +70,12 @@ class Table implements ConfigAbleInterface
         return $table;
     }
 
-    public function createSchema(Schema $schema)
-    {
-        return $schema->createTable($this->name);
-    }
-
     public function addBelongTo(Table $table)
     {
-        $this->belongToTables[$table->getName()] = $table;
+//        $this->belongToTables[$table->getName()] = $table;
+        $this->addField(
+            new RelationField($table, $this)
+        );
 
         return $this;
     }
@@ -84,11 +83,17 @@ class Table implements ConfigAbleInterface
     public function getConfig()
     {
         $config = $this->structure->getConfig();
+
         return $config['tables'][$this->name];
     }
 
     public function getName()
     {
         return $this->name;
+    }
+
+    public function getFields()
+    {
+        return $this->fields;
     }
 }

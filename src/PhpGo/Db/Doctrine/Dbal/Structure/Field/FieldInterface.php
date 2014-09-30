@@ -20,4 +20,6 @@ interface FieldInterface
     const TYPE_ARRAY = 'array';
 
     public function getType();
+
+    public function getRealType();
 }
