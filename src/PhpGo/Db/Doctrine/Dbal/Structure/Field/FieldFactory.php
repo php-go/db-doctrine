@@ -7,7 +7,6 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
-
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
 
 class FieldFactory
@@ -18,36 +17,37 @@ class FieldFactory
 
         switch ($config['type']) {
             case FieldInterface::TYPE_ARRAY :
-                $class = __NAMESPACE__ . '\ArrayField';
+                $class = '\ArrayField';
                 break;
             case FieldInterface::TYPE_BOOLEAN :
-                $class = __NAMESPACE__ . '\BooleanField';
+                $class = '\BooleanField';
                 break;
             case FieldInterface::TYPE_DATE :
-                $class = __NAMESPACE__ . '\DateField';
+                $class = '\DateField';
                 break;
             case FieldInterface::TYPE_DATETIME :
-                $class = __NAMESPACE__ . '\DatetimeField';
+                $class = '\DatetimeField';
                 break;
             case FieldInterface::TYPE_FLOAT :
-                $class = __NAMESPACE__ . '\FloatField';
+                $class = '\FloatField';
                 break;
             case FieldInterface::TYPE_INTEGER :
-                $class = __NAMESPACE__ . '\IntegerField';
+                $class = '\IntegerField';
                 break;
             case FieldInterface::TYPE_STRING :
-                $class = __NAMESPACE__ . '\StringField';
+                $class = '\StringField';
                 break;
             case FieldInterface::TYPE_TEXT :
-                $class = __NAMESPACE__ . '\TextField';
+                $class = '\TextField';
                 break;
             case FieldInterface::TYPE_TIME :
-                $class = __NAMESPACE__ . '\TimeField';
+                $class = '\TimeField';
                 break;
             default:
                 return null;
         }
 
+        $class = __NAMESPACE__ . $class;
         return new $class($name, $table, $config['required'], $config['index'], $config['unique']);
     }
 }
