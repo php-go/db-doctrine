@@ -7,14 +7,13 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
-use Doctrine\DBAL\Schema\Table as SchemaTable;
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
 
 class RelationField extends IntegerField
 {
     protected $relationTable;
 
-    public function __construct(Table $relationTable, Table $table)
+    public function __construct(Table $relationTable, Table $table, $name = '')
     {
         $this->relationTable = $relationTable;
 
@@ -22,6 +21,10 @@ class RelationField extends IntegerField
             ->setIndex(false)
             ->setUnique(false)
             ->setRequired(false);
+
+        if ($name) {
+            $this->name = $name;
+        }
     }
 
     public function getName()
@@ -29,6 +32,7 @@ class RelationField extends IntegerField
         if (!$this->name) {
             $this->name = $this->relationTable->getName() . '_id';
         }
+
         return $this->name;
     }
 

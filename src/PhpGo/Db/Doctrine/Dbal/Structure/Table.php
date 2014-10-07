@@ -7,7 +7,6 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure;
 
-use Doctrine\DBAL\Schema\Schema;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldAbstract;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldFactory;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\RelationField;
@@ -33,16 +32,21 @@ class Table implements ConfigAbleInterface
     }
 
     /**
-     * @param mixed $structure
+     * @param  Structure $structure
+     * @return Table
      */
     public function setStructure(Structure $structure)
     {
         $this->structure = $structure;
+
+        return $this;
     }
 
     public function addField(FieldAbstract $field)
     {
         $this->fields[$field->getName()] = $field;
+
+        return $this;
     }
 
     public function __construct()
@@ -70,11 +74,10 @@ class Table implements ConfigAbleInterface
         return $table;
     }
 
-    public function addBelongTo(Table $table)
+    public function addBelongTo(Table $table, $foreignKey = '')
     {
-//        $this->belongToTables[$table->getName()] = $table;
         $this->addField(
-            new RelationField($table, $this)
+            new RelationField($table, $this, $foreignKey)
         );
 
         return $this;

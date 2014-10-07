@@ -7,6 +7,9 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure;
 
+use PhpGo\Db\Doctrine\Dbal\Extension\ExtensionInterface;
+use PhpGo\Db\Doctrine\Dbal\Extension\TimestampAbleExtension;
+use PhpGo\Db\Doctrine\Dbal\Extension\TreeAbleExtension;
 use PhpGo\Db\Doctrine\Dbal\Structure\Relation\Relation;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
@@ -18,10 +21,13 @@ class Structure implements ConfigAbleInterface
      * @var Table[]
      */
     protected $tables;
+    /** @var  ExtensionInterface[] */
+    protected $extensions;
 
     protected function __construct(array $config)
     {
         $this->config = $config;
+        $this->addCoreExtensions();
         $this->handleData($config);
     }
 
@@ -46,10 +52,22 @@ class Structure implements ConfigAbleInterface
         return new static($data);
     }
 
-    protected function handleData(array $data)
+    protected function handleData(array $config)
     {
-        foreach ($data['tables'] as $name => $tbl) {
+        foreach ($config['tables'] as $name => $tbl) {
             $this->addTable(Table::createFromStructure($name, $this));
+        }
+
+        foreach ($this->tables as $table) {
+            if ($extensions = $table->getConfig()['extensions']) {
+                foreach ($extensions as $name) {
+                    if (!isset($this->extensions[$name])) {
+                        throw new \Exception("$name 扩展未注册");
+                    }
+
+                    $this->extensions[$name]->boot($table);
+                }
+            }
         }
 
         foreach ($this->tables as $table) {
@@ -60,7 +78,7 @@ class Structure implements ConfigAbleInterface
             }
         }
 
-        foreach ($data['many_many'] as $relation) {
+        foreach ($config['many_many'] as $relation) {
             $table = Relation::createManyToManyTable(
                 $this->tables[$relation[0]],
                 $this->tables[$relation[1]]
@@ -85,5 +103,16 @@ class Structure implements ConfigAbleInterface
     public function getTables()
     {
         return $this->tables;
+    }
+
+    public function registerExtension(ExtensionInterface $extension)
+    {
+        $this->extensions[$extension->getName()] = $extension;
+    }
+
+    protected function addCoreExtensions()
+    {
+        $this->registerExtension(new TimestampAbleExtension());
+        $this->registerExtension(new TreeAbleExtension());
     }
 }
