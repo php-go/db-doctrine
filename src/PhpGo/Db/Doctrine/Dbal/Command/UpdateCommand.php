@@ -8,7 +8,7 @@
 namespace PhpGo\Db\Doctrine\Dbal\Command;
 
 use Doctrine\DBAL\Connection;
-use PhpGo\Db\Doctrine\Dbal\Tool\Checker;
+use PhpGo\Db\Doctrine\Dbal\Tool\SchemaChecker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -55,7 +55,7 @@ class UpdateCommand extends Command
             throw new \Exception('It\'s not available db connection object.');
         }
 
-        $checker = new Checker($this->conn);
+        $checker = new SchemaChecker($this->conn);
 
         $structureFile = $input->getOption('structure');
 
