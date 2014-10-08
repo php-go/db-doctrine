@@ -105,6 +105,25 @@ class Structure implements ConfigAbleInterface
         return $this->tables;
     }
 
+    /**
+     * @param $name
+     * @throws \Exception
+     * @return Table
+     */
+    public function getTable($name)
+    {
+        if (!isset($this->tables[$name])) {
+            throw new \Exception("$name 表不存在。");
+        }
+
+        return $this->tables[$name];
+    }
+
+    public function hasTable($name)
+    {
+        return isset($this->tables[$name]) ? true : false;
+    }
+
     public function registerExtension(ExtensionInterface $extension)
     {
         $this->extensions[$extension->getName()] = $extension;

@@ -48,6 +48,7 @@ class FieldFactory
         }
 
         $class = __NAMESPACE__ . $class;
+
         return new $class($name, $table, $config['required'], $config['index'], $config['unique']);
     }
 }

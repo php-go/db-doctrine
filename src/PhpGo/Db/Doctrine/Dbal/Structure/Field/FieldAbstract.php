@@ -9,7 +9,6 @@ namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
 use PhpGo\Db\Doctrine\Dbal\Structure\ConfigAbleInterface;
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
-use Doctrine\DBAL\Schema\Table as SchemaTable;
 
 abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
 {
@@ -43,7 +42,7 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
      */
     public function setRequired($required)
     {
-        $this->required = (bool)$required;
+        $this->required = (bool) $required;
 
         return $this;
     }
@@ -62,7 +61,7 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
      */
     public function setIndex($index)
     {
-        $this->index = (bool)$index;
+        $this->index = (bool) $index;
 
         return $this;
     }
@@ -81,7 +80,7 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
      */
     public function setUnique($unique)
     {
-        $this->unique = (bool)$unique;
+        $this->unique = (bool) $unique;
 
         return $this;
     }
@@ -111,7 +110,7 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
     }
 
     /**
-     * @param mixed $table
+     * @param  mixed                                         $table
      * @return mixed|\PhpGo\Db\Doctrine\Dbal\Structure\Table
      */
     public function setTable(Table $table)

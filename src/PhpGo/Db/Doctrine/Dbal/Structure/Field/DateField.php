@@ -7,9 +7,6 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
-
-use PhpGo\Db\Doctrine\Dbal\Structure\Table;
-
 class DateField extends FieldAbstract
 {
     public function getType()

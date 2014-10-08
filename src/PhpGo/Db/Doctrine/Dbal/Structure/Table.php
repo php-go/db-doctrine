@@ -18,7 +18,6 @@ class Table implements ConfigAbleInterface
     protected $fields;
     /** @var  Structure */
     protected $structure;
-    protected $schemaTable = null;
 
     /**
      * @param  mixed $name
