@@ -18,4 +18,9 @@ class FloatField extends FieldAbstract
     {
         return 'float';
     }
+
+    public function convertData($data)
+    {
+        return (float)$data;
+    }
 }

@@ -18,4 +18,9 @@ class TimeField extends FieldAbstract
     {
         return 'time';
     }
+
+    public function convertData($data)
+    {
+        return new \DateTime($data);
+    }
 }

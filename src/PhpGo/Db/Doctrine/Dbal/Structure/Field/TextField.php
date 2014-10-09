@@ -18,4 +18,9 @@ class TextField extends FieldAbstract
     {
         return 'text';
     }
+
+    public function convertData($data)
+    {
+        return (string)$data;
+    }
 }

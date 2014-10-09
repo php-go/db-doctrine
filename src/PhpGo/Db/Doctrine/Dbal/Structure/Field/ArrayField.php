@@ -18,4 +18,13 @@ class ArrayField extends FieldAbstract
     {
         return 'array';
     }
+
+    public function convertData($data)
+    {
+        if (!is_array($data)) {
+            return (array)$data;
+        }
+
+        return $data;
+    }
 }

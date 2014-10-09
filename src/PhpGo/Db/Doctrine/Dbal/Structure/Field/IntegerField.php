@@ -18,4 +18,9 @@ class IntegerField extends FieldAbstract
     {
         return 'integer';
     }
+
+    public function convertData($data)
+    {
+        return (int)$data;
+    }
 }

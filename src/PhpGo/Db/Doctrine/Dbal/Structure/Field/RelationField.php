@@ -7,6 +7,7 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
+use PhpGo\Db\Doctrine\Dbal\Structure\Relation\Relation;
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
 
 class RelationField extends IntegerField
@@ -30,7 +31,9 @@ class RelationField extends IntegerField
     public function getName()
     {
         if (!$this->name) {
-            $this->name = $this->relationTable->getName() . '_id';
+            $this->name = Relation::getForeignKey(
+                $this->relationTable->getName()
+            );
         }
 
         return $this->name;
@@ -39,5 +42,10 @@ class RelationField extends IntegerField
     public function getRelationTable()
     {
         return $this->relationTable;
+    }
+
+    public function getRelationTableName()
+    {
+        return $this->relationTable->getName();
     }
 }

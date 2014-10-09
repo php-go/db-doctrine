@@ -22,4 +22,6 @@ interface FieldInterface
     public function getType();
 
     public function getRealType();
+
+    public function convertData($data);
 }

@@ -10,12 +10,13 @@ namespace PhpGo\Db\Doctrine\Dbal\Structure;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldAbstract;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\FieldFactory;
 use PhpGo\Db\Doctrine\Dbal\Structure\Field\RelationField;
+use PhpGo\Db\Doctrine\Dbal\Structure\Relation\Relation;
 
 class Table implements ConfigAbleInterface
 {
     protected $name;
     /** @var  FieldAbstract[] */
-    protected $fields;
+    protected $fields = [];
     /** @var  Structure */
     protected $structure;
 
@@ -97,5 +98,67 @@ class Table implements ConfigAbleInterface
     public function getFields()
     {
         return $this->fields;
+    }
+
+    /**
+     * @param $name
+     * @return FieldAbstract
+     * @throws \Exception
+     */
+    public function getField($name)
+    {
+        if (!isset($this->fields[$name])) {
+            throw new \Exception("字段 $name 不存在。");
+        }
+
+        return $this->fields[$name];
+    }
+
+    public function hasBelongToTable($name)
+    {
+        $foreignKey    = Relation::getForeignKey($name);
+        $relationField = $this->getField($foreignKey);
+
+        if ($relationField instanceof RelationField) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getBelongToTable($name)
+    {
+        $foreignKey    = Relation::getForeignKey($name);
+        $relationField = $this->getField($foreignKey);
+
+        if (!($relationField instanceof RelationField)) {
+            throw new \Exception("$name 不是关联表");
+        }
+
+        return $relationField->getRelationTable();
+    }
+
+    public function hasOneToManyTable($name)
+    {
+        $relationTable = $this->structure->getTable($name);
+
+        if ($relationTable->hasBelongToTable($this->getName())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function hasManyToManyTable($name)
+    {
+        $manyMany = $this->structure->getConfig()['many_many'];
+
+        foreach ($manyMany as $mm) {
+            if (in_array($this->getName(), $mm) && in_array($name, $mm)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

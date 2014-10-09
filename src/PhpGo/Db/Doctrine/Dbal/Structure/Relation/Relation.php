@@ -15,14 +15,24 @@ class Relation
 {
     public static function createManyToManyTable(Table $table1, Table $table2)
     {
-        $relation = [$table1->getName(), $table2->getName()];
-        sort($relation);
-
         $table = new Table();
-        $table->setName($relation[0] . '_' . $relation[1])
+        $table->setName(self::getManyToManyTableName($table1, $table2))
             ->addBelongTo($table1)
             ->addBelongTo($table2);
 
         return $table;
+    }
+
+    public static function getManyToManyTableName(Table $table1, Table $table2)
+    {
+        $relation = [$table1->getName(), $table2->getName()];
+        sort($relation);
+
+        return $relation[0] . '_' . $relation[1];
+    }
+
+    public static function getForeignKey($relationTableName)
+    {
+        return $relationTableName . '_id';
     }
 }

@@ -18,4 +18,9 @@ class BooleanField extends FieldAbstract
     {
         return 'boolean';
     }
+
+    public function convertData($data)
+    {
+        return (bool)$data;
+    }
 }
