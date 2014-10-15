@@ -65,7 +65,7 @@ class Structure implements ConfigAbleInterface
                         throw new \Exception("$name 扩展未注册");
                     }
 
-                    $this->extensions[$name]->boot($table);
+                    $this->extensions[$name]->extendTable($table);
                 }
             }
         }
@@ -133,5 +133,10 @@ class Structure implements ConfigAbleInterface
     {
         $this->registerExtension(new TimestampAbleExtension());
         $this->registerExtension(new TreeAbleExtension());
+    }
+
+    public function getExtensions()
+    {
+        return $this->extensions;
     }
 }

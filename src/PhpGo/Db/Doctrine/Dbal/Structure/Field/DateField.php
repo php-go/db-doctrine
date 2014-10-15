@@ -7,7 +7,7 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Structure\Field;
 
-class DateField extends FieldAbstract
+class DateField extends DatetimeField
 {
     public function getType()
     {
@@ -17,10 +17,5 @@ class DateField extends FieldAbstract
     public function getRealType()
     {
         return 'date';
-    }
-
-    public function convertData($data)
-    {
-        return new \DateTime($data);
     }
 }

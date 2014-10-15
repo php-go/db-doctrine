@@ -21,6 +21,10 @@ class DatetimeField extends FieldAbstract
 
     public function convertData($data)
     {
+        if ($data instanceof \DateTime) {
+            return $data;
+        }
+
         return new \DateTime($data);
     }
 }
