@@ -1,5 +1,5 @@
 {
-    "name": "dongww/simple-db",
+    "name": "php-go/db-doctrine",
     "type": "library",
     "license": "MIT",
     "description": "数据库封装。",
