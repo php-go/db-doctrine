@@ -1,0 +1,23 @@
+user:
+    -
+        id: 1
+        username: "dong"
+        password: "pass"
+
+category:
+    -
+        id: 1
+        name: "水果"
+        sort: 1
+        path:
+        level: 1
+        parent_id:
+
+goods:
+    -
+        id: 1
+        category_id: 1
+        name: "苹果"
+        price: 1.1
+        created_at: "2014-10-10 19:54:01"
+        updated_at: "2014-10-10 20:54:01"
