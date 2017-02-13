@@ -39,7 +39,8 @@ class Manager
     }
 
     /**
-     * @param  Table   $table
+     * @param  Table $table
+     *
      * @return Manager
      */
     protected function setTable(Table $table)
@@ -73,12 +74,13 @@ class Manager
      * 创建一个没有数据的 Bean
      *
      * @param  array $data
+     *
      * @return Bean
      */
     public function createBean(array $data = [])
     {
         $bean = new Bean($this);
-        if ($data) {
+        if($data) {
             $fields = $this->table->getFields();
 
             foreach ($fields as $name => $field) {
@@ -97,28 +99,29 @@ class Manager
      * 保存一个 Bean
      *
      * @param  Bean $bean
+     *
      * @return int
      */
     public function store(Bean $bean)
     {
-        $table     = $this->getTable();
+        $table = $this->getTable();
         $storeBean = $this->createBean();
-        $types     = [];
+        $types = [];
 
         foreach ($table->getFields() as $name => $field) {
             $storeBean->$name = $field->convertData($bean->get($name));
-            $types[]          = $field->getRealType();
+            $types[] = $field->getRealType();
         }
 
-        $event      = new StoreEvent($storeBean);
+        $event = new StoreEvent($storeBean);
         $dispatcher = $this->getManagerFactory()->getDispatcher();
 
-        if ($bean->get('id')) {
+        if($bean->get('id')) {
             $dispatcher->dispatch(DbEvents::STORE_UPDATE, $event);
 
             return $this->getConnection()->update(
                 $this->getTableName(),
-                $this->quoteIdentifier($storeBean->getData()),
+                $this->quoteIdentifier($storeBean->toArray()),
                 ['id' => $bean->get('id')],
                 $types
             );
@@ -127,7 +130,7 @@ class Manager
 
             return $this->getConnection()->insert(
                 $this->getTableName(),
-                $this->quoteIdentifier($storeBean->getData()),
+                $this->quoteIdentifier($storeBean->toArray()),
                 $types
             );
         }
@@ -149,6 +152,7 @@ class Manager
      * 从数据库删除指定Bean相对应的数据行
      *
      * @param  Bean $bean
+     *
      * @return int
      */
     public function remove(Bean $bean)
@@ -162,6 +166,7 @@ class Manager
     /**
      * @param $type
      * @param $oldValue
+     *
      * @return bool|\DateTime|float|int|null|string
      */
 //    public function cleanData($type, $oldValue)
@@ -192,12 +197,13 @@ class Manager
 //    }
 
     /**
-     * @param  null   $tableName
+     * @param  null $tableName
+     *
      * @return string
      */
     protected function allFields($tableName = null)
     {
-        if ($tableName == null) {
+        if($tableName == null) {
             $tableName = $this->aliases();
         }
 
@@ -206,7 +212,7 @@ class Manager
 
     protected function aliases($tableName = null)
     {
-        if ($tableName == null) {
+        if($tableName == null) {
             return $this->getTableName();
         }
 
@@ -235,12 +241,13 @@ class Manager
      * 根据一个Id获取一个Bean
      *
      * @param $id
+     *
      * @return Bean
      * @throws \Exception
      */
     public function get($id)
     {
-        if ((int) $id < 1) {
+        if((int)$id < 1) {
             throw new \Exception('ID必须大于0！');
         }
 
@@ -251,6 +258,11 @@ class Manager
             ->setParameter(0, $id);
 
         $data = $this->getConnection()->fetchAssoc($qb->getSQL(), $qb->getParameters());
+
+        if($data === false) {
+            return null;
+        }
+
         $bean = $this->createBean($data);
 
         return $bean;
@@ -312,14 +324,15 @@ class Manager
     }
 
     /**
-     * @param  array  $join
-     * @param  array  $where
-     * @return Bean[]
+     * @param  array $join
+     * @param  array $where
+     *
+     * @return BeanCollection
      */
     public function select(array $join = [], array $where = [])
     {
         $query = $this->getReader();
-        $data  = $query->select(
+        $data = $query->select(
             $this->getTableName(),
             $join,
             '*',
@@ -332,18 +345,19 @@ class Manager
             $beanArr[] = $this->createBean($row);
         }
 
-        return $beanArr;
+        return new BeanCollection($beanArr);
     }
 
     /**
      * @param  array $join
      * @param  array $where
+     *
      * @return bool
      */
     public function has(array $join = [], array $where = [])
     {
         $query = $this->getReader();
-        $data  = $query->has($this->getTableName(), $join, $where);
+        $data = $query->has($this->getTableName(), $join, $where);
 
         return $data;
     }
@@ -351,12 +365,13 @@ class Manager
     /**
      * @param  array $join
      * @param  array $where
+     *
      * @return int
      */
     public function count(array $join = [], array $where = [])
     {
         $query = $this->getReader();
-        $data  = $query->count($this->getTableName(), $join, '*', $where);
+        $data = $query->count($this->getTableName(), $join, '*', $where);
 
         return $data;
     }
@@ -366,6 +381,7 @@ class Manager
      * @param  int   $limit
      * @param  array $where
      * @param  array $join
+     *
      * @return array
      */
     public function getPaging($page = 1, $limit = 10, array $where = [], array $join = [])
@@ -391,6 +407,7 @@ class Manager
 
     /**
      * @param $sql
+     *
      * @return Bean[]
      */
     public function query($sql)
@@ -426,14 +443,15 @@ class Manager
      * @param               $relationTableName
      * @param  array        $where
      * @param  array        $options
-     * @return array|Bean[]
+     *
+     * @return BeanCollection
      */
     public function getMany($id, $relationTableName, array $where = [], array $options = [])
     {
-        if ($this->table->hasOneToManyTable($relationTableName)) {
+        if($this->table->hasOneToManyTable($relationTableName)) {
             $where[Relation::getForeignKey($this->getTableName())] = $id;
 
-            if ($options) {
+            if($options) {
                 $where = array_merge(
                     ['AND' => $where],
                     $options
@@ -446,12 +464,12 @@ class Manager
                     [],
                     $where
                 );
-        } elseif ($this->table->hasManyToManyTable($relationTableName)) {
-            $mm      = Relation::getManyToManyTableName($this->getTableName(), $relationTableName);
+        } elseif($this->table->hasManyToManyTable($relationTableName)) {
+            $mm = Relation::getManyToManyTableName($this->getTableName(), $relationTableName);
             $manager = $this->getManagerFactory()
                 ->getManager($relationTableName);
 
-            $foreignKey     = $mm . '.' . Relation::getForeignKey($relationTableName);
+            $foreignKey = $mm . '.' . Relation::getForeignKey($relationTableName);
             $thisForeignKey = $mm . '.' . Relation::getForeignKey($this->getTableName());
 
             $where[$thisForeignKey] = $id;
@@ -459,13 +477,13 @@ class Manager
             return $manager->select(
                 [
                     '[<]' . $mm => [
-                        $relationTableName . '.id' => $foreignKey
-                    ]
+                        $relationTableName . '.id' => $foreignKey,
+                    ],
                 ],
                 ['AND' => $where]
             );
         } else {
-            return [];
+            return new BeanCollection();
         }
     }
 
@@ -474,11 +492,12 @@ class Manager
      *
      * @param  string $v
      * @param  string $k
+     *
      * @return array
      */
     public function asMap($v, $k = 'id')
     {
-        $data   = $this->select();
+        $data = $this->select();
         $return = [];
         foreach ($data as $d) {
             $return[$d->$k] = $d->$v;
@@ -494,6 +513,7 @@ class Manager
      * @param  int    $limit
      * @param  array  $where
      * @param  array  $join
+     *
      * @return Bean[]
      */
     public function getLimit($order, $limit = 10, array $where = [], array $join = [])

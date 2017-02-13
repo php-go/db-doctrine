@@ -26,7 +26,7 @@ class Bean
 
     public function getTable()
     {
-        if (empty($this->table)) {
+        if(empty($this->table)) {
             $this->table = $this->manager->getTable();
         }
 
@@ -93,7 +93,7 @@ class Bean
 
     public function get($fieldName)
     {
-        if (isset($this->data[$fieldName])) {
+        if(isset($this->data[$fieldName])) {
             return $this->data[$fieldName];
         }
 
@@ -110,15 +110,21 @@ class Bean
         $this->data = $data;
     }
 
-    public function getData()
+    public function toArray()
     {
         return $this->data;
+    }
+
+    public function toJson()
+    {
+        return json_encode($this->toArray());
     }
 
     /**
      * 获得 BelongTo Bean
      *
      * @param $name
+     *
      * @throws \Exception
      * @return Bean|null
      */
@@ -126,7 +132,7 @@ class Bean
     {
         $foreignKey = Relation::getForeignKey($name);
 
-        if (!isset($this->data[$foreignKey])) {
+        if(!isset($this->data[$foreignKey])) {
             return null;
         }
 
