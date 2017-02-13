@@ -8,8 +8,9 @@
 namespace PhpGo\Db\Doctrine\Dbal\Query;
 
 use Doctrine\DBAL\Connection;
+use Medoo\Medoo;
 
-class MedooAdapter extends \medoo
+class MedooAdapter extends Medoo
 {
     public function __construct(Connection $conn)
     {
