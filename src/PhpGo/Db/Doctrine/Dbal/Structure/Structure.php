@@ -33,7 +33,7 @@ class Structure implements ConfigAbleInterface
 
     public static function createFromYaml($fileName)
     {
-        $config = Yaml::parse($fileName);
+        $config = Yaml::parse(file_get_contents($fileName));
 
         return static::createFromArray($config);
     }
