@@ -71,15 +71,15 @@ class Manager
     }
 
     /**
-     * 创建一个没有数据的 Bean
+     * 创建一个没有数据的 Entity
      *
      * @param  array $data
      *
-     * @return Bean
+     * @return Entity
      */
-    public function createBean(array $data = [])
+    public function createEntity(array $data = [])
     {
-        $bean = new Bean($this);
+        $entity = new Entity($this);
         if($data) {
             $fields = $this->table->getFields();
 
@@ -89,40 +89,40 @@ class Manager
                 );
             }
 
-            $bean->import($data);
+            $entity->import($data);
         }
 
-        return $bean;
+        return $entity;
     }
 
     /**
-     * 保存一个 Bean
+     * 保存一个 Entity
      *
-     * @param  Bean $bean
+     * @param  Entity $entity
      *
      * @return int
      */
-    public function store(Bean $bean)
+    public function store(Entity $entity)
     {
         $table = $this->getTable();
-        $storeBean = $this->createBean();
+        $storeEntity = $this->createEntity();
         $types = [];
 
         foreach ($table->getFields() as $name => $field) {
-            $storeBean->$name = $field->convertData($bean->get($name));
+            $storeEntity->$name = $field->convertData($entity->get($name));
             $types[] = $field->getRealType();
         }
 
-        $event = new StoreEvent($storeBean);
+        $event = new StoreEvent($storeEntity);
         $dispatcher = $this->getManagerFactory()->getDispatcher();
 
-        if($bean->get('id')) {
+        if($entity->get('id')) {
             $dispatcher->dispatch(DbEvents::STORE_UPDATE, $event);
 
             return $this->getConnection()->update(
                 $this->getTableName(),
-                $this->quoteIdentifier($storeBean->toArray()),
-                ['id' => $bean->get('id')],
+                $this->quoteIdentifier($storeEntity->toArray()),
+                ['id' => $entity->get('id')],
                 $types
             );
         } else {
@@ -130,7 +130,7 @@ class Manager
 
             return $this->getConnection()->insert(
                 $this->getTableName(),
-                $this->quoteIdentifier($storeBean->toArray()),
+                $this->quoteIdentifier($storeEntity->toArray()),
                 $types
             );
         }
@@ -149,17 +149,17 @@ class Manager
     }
 
     /**
-     * 从数据库删除指定Bean相对应的数据行
+     * 从数据库删除指定 Entity 相对应的数据行
      *
-     * @param  Bean $bean
+     * @param  Entity $entity
      *
      * @return int
      */
-    public function remove(Bean $bean)
+    public function remove(Entity $entity)
     {
         return $this->getConnection()->delete(
             $this->getTableName(),
-            ['id' => $bean->get('id')]
+            ['id' => $entity->get('id')]
         );
     }
 
@@ -238,11 +238,11 @@ class Manager
     }
 
     /**
-     * 根据一个Id获取一个Bean
+     * 根据 Id 获取一个 Entity
      *
      * @param $id
      *
-     * @return Bean
+     * @return Entity
      * @throws \Exception
      */
     public function get($id)
@@ -263,9 +263,9 @@ class Manager
             return null;
         }
 
-        $bean = $this->createBean($data);
+        $entity = $this->createEntity($data);
 
-        return $bean;
+        return $entity;
     }
 
     /**
@@ -327,7 +327,7 @@ class Manager
      * @param  array $join
      * @param  array $where
      *
-     * @return BeanCollection
+     * @return EntityCollection
      */
     public function select(array $join = [], array $where = [])
     {
@@ -339,13 +339,13 @@ class Manager
             $where
         );
 
-        $beanArr = [];
+        $entities = [];
 
         foreach ($data as $row) {
-            $beanArr[] = $this->createBean($row);
+            $entities[] = $this->createEntity($row);
         }
 
-        return new BeanCollection($beanArr);
+        return new EntityCollection($entities);
     }
 
     /**
@@ -392,12 +392,12 @@ class Manager
 
         $whereArr = array_merge($whereArr, $where);
 
-        $beans = $this->select($join, $whereArr);
+        $entities = $this->select($join, $whereArr);
         $count = $this->count($join, $where);
         $pages = ceil($count / $limit);
 
         return [
-            'data'     => $beans,
+            'data'     => $entities,
             'count'    => $count,
             'pages'    => $pages,
             'is_first' => $page <= 1,
@@ -408,20 +408,20 @@ class Manager
     /**
      * @param $sql
      *
-     * @return Bean[]
+     * @return Entity[]
      */
     public function query($sql)
     {
         $conn = $this->getConnection();
         $stmt = $conn->query($sql);
 
-        $beanArr = [];
+        $entities = [];
 
         foreach ($stmt->fetchAll() as $row) {
-            $beanArr[] = $this->createBean($row);
+            $entities[] = $this->createEntity($row);
         }
 
-        return $beanArr;
+        return $entities;
     }
 
     protected function getSelectQueryBuilder()
@@ -444,7 +444,7 @@ class Manager
      * @param  array        $where
      * @param  array        $options
      *
-     * @return BeanCollection
+     * @return EntityCollection
      */
     public function getMany($id, $relationTableName, array $where = [], array $options = [])
     {
@@ -483,7 +483,7 @@ class Manager
                 ['AND' => $where]
             );
         } else {
-            return new BeanCollection();
+            return new EntityCollection();
         }
     }
 
@@ -514,7 +514,7 @@ class Manager
      * @param  array  $where
      * @param  array  $join
      *
-     * @return Bean[]
+     * @return Entity[]
      */
     public function getLimit($order, $limit = 10, array $where = [], array $join = [])
     {

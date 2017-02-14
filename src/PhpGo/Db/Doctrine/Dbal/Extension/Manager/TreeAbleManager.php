@@ -8,7 +8,7 @@
 namespace PhpGo\Db\Doctrine\Dbal\Extension\Manager;
 
 use Doctrine\DBAL\Connection;
-use PhpGo\Db\Doctrine\Dbal\Manager\Bean;
+use PhpGo\Db\Doctrine\Dbal\Manager\Entity;
 use PhpGo\Db\Doctrine\Dbal\Manager\Manager;
 
 class TreeAbleManager extends Manager
@@ -18,54 +18,54 @@ class TreeAbleManager extends Manager
 
     protected $categories;
 
-    public function addChildNode(Bean $bean, Bean $parentBean = null)
+    public function addChildNode(Entity $entity, Entity $parentEntity = null)
     {
         $qb = $this->getSelectQueryBuilder()
             ->select('max(sort)');
 
-        if ($parentBean != null) {
+        if ($parentEntity != null) {
             $qb
                 ->where('parent_id = ?')
-                ->setParameter(0, $parentBean->id);
+                ->setParameter(0, $parentEntity->id);
         } else {
             $qb
                 ->where('parent_id is null');
         }
 
         $maxSort         = $this->getConnection()->fetchColumn($qb->getSQL(), $qb->getParameters());
-        $bean->sort      = $maxSort + 1;
-        $bean->path      = $this->getChildPath($parentBean);
-        $bean->level     = $this->getChildLevel($parentBean);
-        $bean->parent_id = $parentBean ? $parentBean->id : null;
+        $entity->sort      = $maxSort + 1;
+        $entity->path      = $this->getChildPath($parentEntity);
+        $entity->level     = $this->getChildLevel($parentEntity);
+        $entity->parent_id = $parentEntity ? $parentEntity->id : null;
 
-        return $this->store($bean);
+        return $this->store($entity);
     }
 
-    public function addPreNode(Bean $insertBean, Bean $currentBean)
+    public function addPreNode(Entity $insertEntity, Entity $currentEntity)
     {
-        return $this->insertNode($insertBean, $currentBean, self::INSERT_PREVIOUS);
+        return $this->insertNode($insertEntity, $currentEntity, self::INSERT_PREVIOUS);
     }
 
-    public function addNextNode(Bean $insertBean, Bean $currentBean)
+    public function addNextNode(Entity $insertEntity, Entity $currentEntity)
     {
-        return $this->insertNode($insertBean, $currentBean, self::INSERT_NEXT);
+        return $this->insertNode($insertEntity, $currentEntity, self::INSERT_NEXT);
     }
 
-    public function insertNode(Bean $insertBean, Bean $currentBean, $position = self::INSERT_NEXT)
+    public function insertNode(Entity $insertEntity, Entity $currentEntity, $position = self::INSERT_NEXT)
     {
-        $parentId   = $currentBean->parent_id;
-        $sort       = $currentBean->sort;
-        $parentBean = $currentBean->parent;
+        $parentId   = $currentEntity->parent_id;
+        $sort       = $currentEntity->sort;
+        $parentEntity = $currentEntity->parent;
 
         $qb = $this->getUpdateQueryBuilder()
             ->set('sort', 'sort + 1');
 
         if ($position == self::INSERT_PREVIOUS) {
             $qb->where('sort >= :sort');
-            $insertBean->sort = $sort;
+            $insertEntity->sort = $sort;
         } else {
             $qb->where('sort > :sort');
-            $insertBean->sort = $sort + 1;
+            $insertEntity->sort = $sort + 1;
         }
 
         $qb->setParameter('sort', $sort);
@@ -80,17 +80,17 @@ class TreeAbleManager extends Manager
 
         $this->getConnection()->executeUpdate($qb->getSQL(), $qb->getParameters());
 
-        $insertBean->parent_id = $parentId;
-        $insertBean->path      = $this->getChildPath($parentBean);
-        $insertBean->level     = $this->getChildLevel($parentBean);
+        $insertEntity->parent_id = $parentId;
+        $insertEntity->path      = $this->getChildPath($parentEntity);
+        $insertEntity->level     = $this->getChildLevel($parentEntity);
 
-        return $this->store($insertBean);
+        return $this->store($insertEntity);
     }
 
-    public function move(Bean $bean, Bean $newParentBean = null, $newSort = 1)
+    public function move(Entity $entity, Entity $newParentEntity = null, $newSort = 1)
     {
-        $oldParentId = $bean->parent_id;
-        $oldSort     = $bean->sort;
+        $oldParentId = $entity->parent_id;
+        $oldSort     = $entity->sort;
 
         //原来的同级排序进行压缩
         $qb = $this->getUpdateQueryBuilder()
@@ -114,29 +114,29 @@ class TreeAbleManager extends Manager
             ->where('sort >= :sort')
             ->setParameter('sort', $newSort);
 
-        if ($newParentBean) {
+        if ($newParentEntity) {
             $qb
                 ->andWhere('parent_id = :pid')
-                ->setParameter('pid', $newParentBean->id);
+                ->setParameter('pid', $newParentEntity->id);
         } else {
             $qb->andWhere('parent_id is null');
         }
 
         $this->getConnection()->executeUpdate($qb->getSQL(), $qb->getParameters());
 
-        $replacePathFrom  = $bean->path . $bean->id . '/';
-        $replaceLevelFrom = $bean->level;
+        $replacePathFrom  = $entity->path . $entity->id . '/';
+        $replaceLevelFrom = $entity->level;
 
         //更新移动节点的path、sort、level
-        $bean->parent_id = $newParentBean ? $newParentBean->id : null;
-        $bean->sort      = $newSort;
-        $bean->path      = $this->getChildPath($newParentBean);
-        $bean->level     = $this->getChildLevel($newParentBean);
+        $entity->parent_id = $newParentEntity ? $newParentEntity->id : null;
+        $entity->sort      = $newSort;
+        $entity->path      = $this->getChildPath($newParentEntity);
+        $entity->level     = $this->getChildLevel($newParentEntity);
 
         //更新所有子节点的路径
-        if ($this->store($bean)) { //echo 1;exit;
-            $replacePathTo  = $bean->path . $bean->id . '/';
-            $replaceLevelTo = $bean->level;
+        if ($this->store($entity)) { //echo 1;exit;
+            $replacePathTo  = $entity->path . $entity->id . '/';
+            $replaceLevelTo = $entity->level;
 
             $qb = $this->getUpdateQueryBuilder()
                 ->set('path', 'REPLACE(path, :replace_path_from, :replace_path_to)')
@@ -156,46 +156,46 @@ class TreeAbleManager extends Manager
         return false;
     }
 
-    public function remove(Bean $bean)
+    public function remove(Entity $entity)
     {
         //todo 可能有点问题，需要进一步测试
         $qb = $this->getSelectQueryBuilder()
             ->select('id')
             ->where('parent_id = :pid')
-            ->setParameter('pid', $bean->id);
+            ->setParameter('pid', $entity->id);
 
         $data = $this->getConnection()->fetchAll($qb->getSQL(), $qb->getParameters());
 
         foreach ($data as $d) {
-            $childBean = $this->get($d['id']);
-            $this->move($childBean, null, 1);
+            $childEntity = $this->get($d['id']);
+            $this->move($childEntity, null, 1);
         }
 
         $qb = $this->getUpdateQueryBuilder()
             ->set('sort', 'sort - 1')
             ->where('sort > :sort')
-            ->setParameter('sort', $bean->sort);
+            ->setParameter('sort', $entity->sort);
 
-        if ($bean->parent_id) {
+        if ($entity->parent_id) {
             $qb
                 ->andWhere('parent_id = :pid')
-                ->setParameter('pid', $bean->parent_id);
+                ->setParameter('pid', $entity->parent_id);
         } else {
             $qb->andWhere('parent_id is null');
         }
 
         $this->getConnection()->executeUpdate($qb->getSQL(), $qb->getParameters());
 
-        return parent::remove($bean);
+        return parent::remove($entity);
     }
 
-    protected function getChildPath(Bean $bean = null)
+    protected function getChildPath(Entity $entity = null)
     {
         $path = null;
 
-        if ($bean) {
-            $basePath = $bean->path ?: '/';
-            $path     = $basePath . $bean->id . '/';
+        if ($entity) {
+            $basePath = $entity->path ?: '/';
+            $path     = $basePath . $entity->id . '/';
         } else {
             $path = null;
         }
@@ -203,12 +203,12 @@ class TreeAbleManager extends Manager
         return $path;
     }
 
-    protected function getChildLevel(Bean $bean = null)
+    protected function getChildLevel(Entity $entity = null)
     {
         $level = null;
 
-        if ($bean) {
-            $level = $bean->level + 1;
+        if ($entity) {
+            $level = $entity->level + 1;
         } else {
             $level = 1;
         }
@@ -354,17 +354,18 @@ class TreeAbleManager extends Manager
     }
 
     /**
-     * 获得子节点的Bean集合
+     * 获得子节点的 Entity 集合
      *
      * @param  int    $pid
      * @param  bool   $topLevel
      * @param  bool   $includeSelf
-     * @return Bean[]
+     *
+*@return Entity[]
      */
     public function getChildren($pid = 0, $topLevel = false, $includeSelf = true)
     {
         $ids   = $this->getChildrenIds($pid, $topLevel, $includeSelf);
-        $beans = [];
+        $entities = [];
 
         $qb = $this->getSelectQueryBuilder()
             ->select('*')
@@ -378,10 +379,10 @@ class TreeAbleManager extends Manager
         );
 
         foreach ($data as $d) {
-            $beans[] = $this->createBean($d);
+            $entities[] = $this->createEntity($d);
         }
 
-        return $beans;
+        return $entities;
     }
     //todo 新增编辑移动节点时，以数组形式将路径信息保存到数据库，以便读取。 格式：[['id'=>1, 'title'=>'节点名称'], [...]]
 }

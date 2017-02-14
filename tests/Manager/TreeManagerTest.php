@@ -41,7 +41,7 @@ class TreeManagerTest extends AbstractTest
     {
         $bean = $this->cm->get(1);
 
-        $insertBean       = $this->cm->createBean();
+        $insertBean       = $this->cm->createEntity();
         $insertBean->name = '苹果';
 
         $count = $this->cm->addChildNode($insertBean, $bean);

@@ -7,21 +7,21 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Event;
 
-use PhpGo\Db\Doctrine\Dbal\Manager\Bean;
+use PhpGo\Db\Doctrine\Dbal\Manager\Entity;
 use Symfony\Component\EventDispatcher\Event;
 
 class StoreEvent extends Event
 {
-    /** @var  Bean */
-    protected $bean;
+    /** @var  Entity */
+    protected $entity;
 
-    public function __construct(Bean $bean)
+    public function __construct(Entity $entity)
     {
-        $this->bean = $bean;
+        $this->entity = $entity;
     }
 
-    public function getBean()
+    public function getEntity()
     {
-        return $this->bean;
+        return $this->entity;
     }
 }

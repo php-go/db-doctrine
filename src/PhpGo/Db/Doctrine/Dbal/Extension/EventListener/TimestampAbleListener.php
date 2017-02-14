@@ -16,21 +16,21 @@ class TimestampAbleListener implements EventSubscriberInterface
 {
     public function onInsert(StoreEvent $event)
     {
-        $bean   = $event->getBean();
-        $config = $bean->getTable()->getConfig();
+        $entity   = $event->getEntity();
+        $config = $entity->getTable()->getConfig();
 
         if (in_array(TimestampAbleExtension::NAME, $config['extensions'])) {
-            $bean->created_at = $bean->updated_at = new \DateTime();
+            $entity->created_at = $entity->updated_at = new \DateTime();
         }
     }
 
     public function onUpdate(StoreEvent $event)
     {
-        $bean   = $event->getBean();
-        $config = $bean->getTable()->getConfig();
+        $entity   = $event->getEntity();
+        $config = $entity->getTable()->getConfig();
 
         if (in_array(TimestampAbleExtension::NAME, $config['extensions'])) {
-            $bean->updated_at = new \DateTime();
+            $entity->updated_at = new \DateTime();
         }
     }
 

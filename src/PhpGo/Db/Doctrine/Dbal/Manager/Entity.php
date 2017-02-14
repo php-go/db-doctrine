@@ -8,9 +8,10 @@
 namespace PhpGo\Db\Doctrine\Dbal\Manager;
 
 use PhpGo\Db\Doctrine\Dbal\Structure\Relation\Relation;
+use PhpGo\Db\Doctrine\Dbal\Structure\Structure;
 use PhpGo\Db\Doctrine\Dbal\Structure\Table;
 
-class Bean
+class Entity
 {
     protected $data = [];
 
@@ -49,7 +50,7 @@ class Bean
 //    }
 
     /**
-     * @return array
+     * @return Structure
      */
     protected function getStructure()
     {
@@ -121,12 +122,12 @@ class Bean
     }
 
     /**
-     * 获得 BelongTo Bean
+     * 获得 BelongTo Entity
      *
      * @param $name
      *
      * @throws \Exception
-     * @return Bean|null
+     * @return Entity|null
      */
     public function getBelongTo($name)
     {

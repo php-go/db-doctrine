@@ -7,14 +7,14 @@
 
 namespace PhpGo\Db\Doctrine\Dbal\Manager;
 
-class BeanCollection extends \ArrayIterator
+class EntityCollection extends \ArrayIterator
 {
     public function toArray()
     {
         $arr = [];
 
-        foreach ($this as $bean) {
-            $arr[] = $bean->toArray();
+        foreach ($this as $entity) {
+            $arr[] = $entity->toArray();
         }
 
         return $arr;
