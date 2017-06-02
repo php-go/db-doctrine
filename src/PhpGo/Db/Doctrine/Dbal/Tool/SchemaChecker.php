@@ -27,6 +27,7 @@ class SchemaChecker
      * 获得数据库的更改后的 SQL语句 数组
      *
      * @param  string $fileName 数据结构的文件名
+     *
      * @return array
      */
     public function getDiffSql($fileName)
@@ -54,12 +55,13 @@ class SchemaChecker
                 $schemaTable->addColumn(
                     $fieldName,
                     $field->getRealType(),
-                    ['notnull' => $field->isRequired()]);
+                    $field->getDoctrineOptions()
+                );
 
-                if ($field instanceof RelationField) {
+                if($field instanceof RelationField) {
                     $schemaTable->addForeignKeyConstraint(
                         $schemaTables[$field->getRelationTable()->getName()],
-                        array($field->getName()),
+                        [$field->getName()],
                         ["id"],
                         ["onUpdate" => "CASCADE", "onDelete" => "SET NULL"]
                     );
@@ -67,12 +69,12 @@ class SchemaChecker
                     continue;
                 }
 
-                if ($field instanceof FieldAbstract) {
-                    if ($field->isUnique()) {
+                if($field instanceof FieldAbstract) {
+                    if($field->isUnique()) {
                         $schemaTable->addUniqueIndex([$field->getName()]);
                     }
 
-                    if ($field->isIndex()) {
+                    if($field->isIndex()) {
                         $schemaTable->addIndex([$field->getName()]);
                     }
 

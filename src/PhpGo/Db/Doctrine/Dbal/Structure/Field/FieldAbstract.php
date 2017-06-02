@@ -15,74 +15,31 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
     protected $name;
     /** @var  Table */
     protected $table;
-    protected $index;
-    protected $unique;
-    protected $required;
+    /** @var  array */
+    protected $options;
 
-    public function __construct($name, Table $table, $required = false, $index = false, $unique = false)
+    public function __construct($name, Table $table, $options = [])
     {
         $this->setName($name)
-            ->setTable($table)
-            ->setIndex($index)
-            ->setUnique($unique)
-            ->setRequired($required);
+            ->setTable($table);
+
+        $this->setOptions($options);
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function isRequired()
+    public function getOptions(): array
     {
-        return $this->required;
+        return $this->options;
     }
 
     /**
-     * @param  mixed $required
-     * @return $this
+     * @param array $options
      */
-    public function setRequired($required)
+    public function setOptions(array $options)
     {
-        $this->required = (bool) $required;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function isIndex()
-    {
-        return $this->index;
-    }
-
-    /**
-     * @param  mixed $index
-     * @return $this
-     */
-    public function setIndex($index)
-    {
-        $this->index = (bool) $index;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function isUnique()
-    {
-        return $this->unique;
-    }
-
-    /**
-     * @param  mixed $unique
-     * @return $this
-     */
-    public function setUnique($unique)
-    {
-        $this->unique = (bool) $unique;
-
-        return $this;
+        $this->options = $options;
     }
 
     public function getName()
@@ -90,8 +47,29 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
         return $this->name;
     }
 
+    public function getOption($key)
+    {
+        return $this->options[$key]??null;
+    }
+
+    public function getDoctrineOptions()
+    {
+        return [
+            'notnull'       => $this->getOption('required'),
+            'length'        => $this->getOption('length'),
+            'default'       => $this->getOption('default '),
+            'autoincrement' => $this->getOption('autoincrement '),
+            'fixed'         => $this->getOption('fixed '),
+            'precision'     => $this->getOption('precision '),
+            'scale'         => $this->getOption('scale '),
+            'unsigned'      => $this->getOption('unsigned '),
+            'comment'       => $this->getOption('comment '),
+        ];
+    }
+
     /**
      * @param  mixed $name
+     *
      * @return $this
      */
     public function setName($name)
@@ -102,7 +80,7 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
     }
 
     /**
-     * @return mixed
+     * @return Table
      */
     public function getTable()
     {
@@ -110,8 +88,9 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
     }
 
     /**
-     * @param  mixed                                         $table
-     * @return mixed|\PhpGo\Db\Doctrine\Dbal\Structure\Table
+     * @param  mixed $table
+     *
+     * @return mixed|Table
      */
     public function setTable(Table $table)
     {
