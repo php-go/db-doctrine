@@ -40,13 +40,11 @@ class Structure implements ConfigAbleInterface
 
     public static function createFromArray(array $config)
     {
-        $configs       = [$config];
         $processor     = new Processor();
-        $configuration = new Configuration();
 
         $data = $processor->processConfiguration(
-            $configuration,
-            $configs
+            new Configuration(),
+            [$config]
         );
 
         return new static($data);
