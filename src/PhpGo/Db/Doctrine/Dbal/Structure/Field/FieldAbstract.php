@@ -52,6 +52,11 @@ abstract class FieldAbstract implements ConfigAbleInterface, FieldInterface
         return $this->options[$key]??null;
     }
 
+    public function setOption($key, $value)
+    {
+        $this->options[$key] = $value;
+    }
+
     public function getDoctrineOptions()
     {
         return [

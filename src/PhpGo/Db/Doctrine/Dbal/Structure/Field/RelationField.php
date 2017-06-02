@@ -18,19 +18,19 @@ class RelationField extends IntegerField
     {
         $this->relationTable = $relationTable;
 
-        $this->setTable($table)
-            ->setIndex(false)
-            ->setUnique(false)
-            ->setRequired(false);
+        $this->setTable($table);
+        $this->setOption('index', false);
+        $this->setOption('unique', false);
+        $this->setOption('required', false);
 
-        if ($name) {
+        if($name) {
             $this->name = $name;
         }
     }
 
     public function getName()
     {
-        if (!$this->name) {
+        if(!$this->name) {
             $this->name = Relation::getForeignKey(
                 $this->relationTable->getName()
             );

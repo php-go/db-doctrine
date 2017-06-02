@@ -70,11 +70,11 @@ class SchemaChecker
                 }
 
                 if($field instanceof FieldAbstract) {
-                    if($field->isUnique()) {
+                    if($field->getOption('unique')) {
                         $schemaTable->addUniqueIndex([$field->getName()]);
                     }
 
-                    if($field->isIndex()) {
+                    if($field->getOption('index')) {
                         $schemaTable->addIndex([$field->getName()]);
                     }
 
