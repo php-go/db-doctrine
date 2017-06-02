@@ -4,7 +4,7 @@
     "license": "MIT",
     "description": "数据库封装。",
     "require": {
-        "php": ">=5.4",
+        "php": ">=7.0",
         "symfony/console": "~3.1",
         "symfony/yaml": "~3.1",
         "symfony/config": "~3.1",
