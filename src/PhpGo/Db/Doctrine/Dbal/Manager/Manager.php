@@ -514,7 +514,7 @@ class Manager
      * @param  array  $where
      * @param  array  $join
      *
-     * @return Entity[]
+     * @return EntityCollection
      */
     public function getLimit($order, $limit = 10, array $where = [], array $join = [])
     {
